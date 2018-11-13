@@ -170,7 +170,7 @@ def create_top10_dataset(prices, exchange_rates, ratings):
 ```yaml
 type: "FullCodeSlide"
 key: "df26bee985"
-disable_transition: false
+disable_transition: true
 ```
 
 `@part1`
