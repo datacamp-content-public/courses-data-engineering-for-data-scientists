@@ -43,7 +43,7 @@ This is an example exercise.
 
 ---
 
-## Testing your logic
+## Writing unit tests for pyspark
 
 ```yaml
 type: VideoExercise
