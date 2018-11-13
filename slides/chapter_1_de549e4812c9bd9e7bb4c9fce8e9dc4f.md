@@ -139,7 +139,7 @@ We still have a lot of work being done by `create_top10_dataset` though, which m
 ```yaml
 type: "FullCodeSlide"
 key: "4a0650ccf8"
-disable_transition: true
+disable_transition: false
 ```
 
 `@part1`
