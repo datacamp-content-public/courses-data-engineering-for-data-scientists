@@ -273,7 +273,7 @@ def create_weekly_brand_scores(prices, exchange_rates, ratings):
 `@script`
 Those modular functions we made before can now easily be chained, using the `transform` method of Spark DataFrames.
 
-We can now also re-use them in entirely different data pipelines. Here's another example where we reuse a lot of what we have written before with only two new functions.
+We can now also re-use them in entirely different data pipelines. Here's another example where we reuse a lot of what we have written before with only two new functions which we'll explore in the exercices.
 
 
 ---
