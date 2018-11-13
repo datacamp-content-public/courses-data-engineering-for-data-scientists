@@ -1,6 +1,6 @@
 ---
-title: 'Chapter Title Here'
-description: 'Chapter description goes here.'
+title: 'Test your data pipeline'
+description: 'Before, after or while you build your data pipeline you want to test it and gain confidence in its behaviour. '
 ---
 
 ## Example coding exercise
@@ -40,3 +40,16 @@ This is an example exercise.
 ```{python}
 
 ```
+
+---
+
+## Testing your logic
+
+```yaml
+type: VideoExercise
+key: 7f879913b2
+xp: 50
+```
+
+`@projector_key`
+de549e4812c9bd9e7bb4c9fce8e9dc4f
