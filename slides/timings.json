@@ -1,3 +1,102 @@
 {
-  "slides/chapter_1_de549e4812c9bd9e7bb4c9fce8e9dc4f.md": []
+  "slides/chapter_1_de549e4812c9bd9e7bb4c9fce8e9dc4f.md": [
+    {
+      "timing": 0,
+      "state": {
+        "indexh": 0,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.006983849688963444,
+      "state": {
+        "indexh": 0,
+        "indexf": 0
+      }
+    },
+    {
+      "timing": 0.05648895645488222,
+      "state": {
+        "indexh": 1,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.12780602589641435,
+      "state": {
+        "indexh": 2,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.23327777923394144,
+      "state": {
+        "indexh": 3,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.2569716528622353,
+      "state": {
+        "indexh": 3,
+        "indexf": 0
+      }
+    },
+    {
+      "timing": 0.3029733216257776,
+      "state": {
+        "indexh": 3,
+        "indexf": 1
+      }
+    },
+    {
+      "timing": 0.3893159991612497,
+      "state": {
+        "indexh": 3,
+        "indexf": 2
+      }
+    },
+    {
+      "timing": 0.4829852738170127,
+      "state": {
+        "indexh": 3,
+        "indexf": 3
+      }
+    },
+    {
+      "timing": 0.5470375428112113,
+      "state": {
+        "indexh": 4,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.6555787071014189,
+      "state": {
+        "indexh": 5,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.7455527844761305,
+      "state": {
+        "indexh": 6,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.863331668938282,
+      "state": {
+        "indexh": 7,
+        "indexf": -1
+      }
+    },
+    {
+      "timing": 0.9115443358146361,
+      "state": {
+        "indexh": 7,
+        "indexf": 0
+      }
+    }
+  ]
 }
