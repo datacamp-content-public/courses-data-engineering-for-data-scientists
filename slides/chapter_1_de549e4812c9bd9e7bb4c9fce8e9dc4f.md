@@ -134,11 +134,43 @@ We still have a lot of work being done by `create_top10_dataset` though, which m
 
 
 ---
-## Create small, reusable, well-named functions
+## Create small, reusable and well-named functions
+
+```yaml
+type: "FullCodeSlide"
+key: "4a0650ccf8"
+disable_transition: true
+```
+
+`@part1`
+```python
+def create_top10_dataset(prices, exchange_rates, ratings):
+    prices_with_ratings = prices.join(ratings, ["brand", "model"])
+    unit_prices_with_ratings = (prices_with_ratings
+                                .join(exchange_rates, ["currency", "date"])
+                                .withColumn("unit_price_in_euro",
+                                            col("price") / col("quantity") 
+                                            * col("exchange_rate_to_euro")))
+
+    return (unit_prices_with_ratings
+            .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
+            .select("date", "brand", "model", "store", "absorption_rate",
+                    "comfort", "unit_price_in_euro")
+            .orderBy(col("unit_price_in_euro").desc())
+            .limit(10))```
+
+
+`@script`
+
+
+
+---
+## Create small, reusable and well-named functions
 
 ```yaml
 type: "FullCodeSlide"
 key: "df26bee985"
+disable_transition: false
 ```
 
 `@part1`
@@ -167,7 +199,7 @@ def select_top_n_best(df, limit=10):
 
 
 `@script`
-
+The set of transformations that the function `create_top10_dataset` executed
 
 
 ---
