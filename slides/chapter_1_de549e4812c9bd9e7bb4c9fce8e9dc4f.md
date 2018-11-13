@@ -238,7 +238,7 @@ As you can see, these transformations are now easy to test. We have written two 
 
 
 ---
-## Putting it all together
+## Putting it all together and reusing components
 
 ```yaml
 type: "FullCodeSlide"
@@ -248,19 +248,30 @@ key: "2cea900710"
 `@part1`
 ```python
 def create_top10_dataset(prices, exchange_rates, ratings):
-    # prices_with_ratings = prices.join(ratings, ["brand", "model"])
-    return (prices
-            .transform(partial(link_with_ratings, ratings=ratings))
-            .transform(partial(link_with_exchange_rates, rates=exchange_rates))
-            .transform(calculate_unit_price_in_euro)
-            .transform(filter_acceptable_diapers)
-            .transform(select_top_n_best)
-            )
-```
+    df = (prices
+          .transform(partial(link_with_ratings, ratings=ratings))
+          .transform(partial(link_with_exchange_rates, rates=exchange_rates))
+          .transform(calculate_unit_price_in_euro)
+          .transform(filter_acceptable_diapers)
+          .transform(select_top_n_best)
+          )
+    return df```
+
+```python
+def create_weekly_brand_scores(prices, exchange_rates, ratings):
+    df = (prices
+          .transform(partial(link_with_ratings, ratings=ratings))
+          .transform(partial(link_with_exchange_rates, rates=exchange_rates))
+          .transform(calculate_unit_price_in_euro)
+          .transform(add_year_and_week)
+          .transform(aggregate_by_week)
+          )
+    return df
+```{{1}}
 
 
 `@script`
-
+Those modular functions we made before can now easily be chained, using the `transform` method of DataFrames.
 
 
 ---
