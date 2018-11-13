@@ -56,7 +56,7 @@ Our application has hard-coded dependencies to S3 paths we might not have access
 
 
 ---
-## Remove hard-coded paths
+## Remove hard-coded paths & extract RW logic
 
 ```yaml
 type: "FullCodeSlide"
@@ -67,6 +67,81 @@ center_content: false
 `@part1`
 ```python
 
+def load_data():
+   ...
+
+def create_top10_dataset(prices, exchange_rates, ratings):
+    prices_with_ratings = prices.join(ratings, ["brand", "model"])
+    unit_prices_with_ratings = (prices_with_ratings
+                                .join(exchange_rates, ["currency", "date"])
+                                .withColumn("unit_price_in_euro",
+                                            col("price") / col("quantity") 
+                                            * col("exchange_rate_to_euro")))
+
+    return (unit_prices_with_ratings
+            .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
+            .select("date", "brand", "model", "store", "absorption_rate",
+                    "comfort", "unit_price_in_euro")
+            .orderBy(col("unit_price_in_euro").desc())
+            .limit(10))
+
+def write_data(df):
+   ...
+```
+
+
+`@script`
+We’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the main logic. That function accepts 3 Spark dataframes. Optionally, the read and write functions can get the paths from a data catalogue, which could be passed in as a dictionary, e.g.
+
+
+---
+## Creating in-memory DataFrames
+
+```yaml
+type: "FullCodeSlide"
+key: "9fe02bd136"
+```
+
+`@part1`
+Downsides to working with files:
+* hard to maintain {{1}}
+* breaks code-locality {{2}}
+* improperly sampled {{3}}
+
+Consider making in-memory Spark DataFrames:{{4}}
+```python
+prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
+                   date(2018, 11, 12))]
+col_names_prices = ("store", "countrycode", "brand", "model",
+                    "price", "currency", "quantity", "date")
+prices_df = spark.createDataFrame(prices, col_names_prices)
+exchanges_df = ...
+ratings_df = ...
+create_top10_dataset(prices_df, exchange_rates_df, ratings_df)
+```{{4}}
+
+
+`@script`
+There are several downsides about working with files.
+For starters, they are hard to maintain: binary files can't be properly viewed and even non-binary files likes CSVs pose navigation challenges when there's too much data.
+
+Next, using files also breaks code-locality. It's the concept where parts of the code that are being used together should be closely grouped together as well. By having sample data in separate files, you increase the distance between understanding what goes into a function and what that function does to the data.
+
+Finally, data in files is often improperly sampled. You will want to test the behaviour of your code when given both regular and edge cases. The latter is often underrepresented in your sample files. It would also become cumbersome to extract just those edge cases and verify the transformations.
+
+What we’ve won here is that our main logic can be tested using in-memory Dataframes that are completely loose from any data in files.
+
+
+---
+## Insert title here...
+
+```yaml
+type: "FullCodeSlide"
+key: "df26bee985"
+```
+
+`@part1`
+```python
 def create_top10_dataset(prices, exchange_rates, ratings):
     # prices_with_ratings = prices.join(ratings, ["brand", "model"])
     return (prices
@@ -102,31 +177,7 @@ def calculate_unit_price_in_euro(df):
 
 def filter_best(df):
     return df.filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
-
-
-def write_data(df):
-    (df
-     .repartition(1)
-     .write
-     .csv("s3://dc-course/top10diapers"))
-
 ```
-
-
-`@script`
-We’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the main logic. That function accepts 3 Spark dataframes. What we’ve won here is that our main logic can be tested using in-memory Dataframes that are completely loose from any data in files.
-
-
----
-## Insert title here...
-
-```yaml
-type: "FullCodeSlide"
-key: "df26bee985"
-```
-
-`@part1`
-
 
 
 `@script`
