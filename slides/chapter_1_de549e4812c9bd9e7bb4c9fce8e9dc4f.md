@@ -129,11 +129,12 @@ Next, using files also breaks code-locality. It's the concept where parts of the
 
 Finally, data in files is often improperly sampled. You will want to test the behaviour of your code when given both regular and edge cases. The latter is often underrepresented in your sample files. It would also become cumbersome to extract just those edge cases and verify the transformations.
 
-What we’ve won here is that our main logic can be tested using in-memory Dataframes that are completely loose from any data in files.
+Here’s an example of how you could create in-memory DataFrames. The data itself can be easily changed, by altering the list of tuples.
+We still have a lot of work being done by `create_top10_dataset` though, which makes it hard to test.
 
 
 ---
-## Insert title here...
+## Create small, reusable, well-named functions
 
 ```yaml
 type: "FullCodeSlide"
@@ -142,16 +143,19 @@ key: "df26bee985"
 
 `@part1`
 ```python
-def create_top10_dataset(prices, exchange_rates, ratings):
-    # prices_with_ratings = prices.join(ratings, ["brand", "model"])
-    return (prices
-            .transform(partial(link_with_ratings, ratings=ratings))
-            .transform(partial(link_with_exchange_rates, rates=exchange_rates))
-            .transform(calculate_unit_price_in_euro)
-            .transform(filter_best)
-            .transform(select_top_n_best)
-            )
+def link_with_ratings(ratings, prices):
+    return prices.join(ratings, ["brand", "model"])
 
+def link_with_exchange_rates(prices, rates):
+    return prices.join(rates, ["currency", "date"])
+
+def calculate_unit_price_in_euro(df):
+    return df.withColumn(
+        "unit_price_in_euro",
+        col("price") / col("quantity") * col("exchange_rate_to_euro"))
+
+def filter_acceptable_diapers(df):
+    return df.filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
 
 def select_top_n_best(df, limit=10):
     return (df
@@ -159,24 +163,6 @@ def select_top_n_best(df, limit=10):
                     "comfort", "unit_price_in_euro")
             .orderBy(col("unit_price_in_euro").desc())
             .limit(limit))
-
-
-def link_with_ratings(ratings, prices):
-    return prices.join(ratings, ["brand", "model"])
-
-
-def link_with_exchange_rates(prices, rates):
-    return prices.join(rates, ["currency", "date"])
-
-
-def calculate_unit_price_in_euro(df):
-    return df.withColumn(
-        "unit_price_in_euro",
-        col("price") / col("quantity") * col("exchange_rate_to_euro"))
-
-
-def filter_best(df):
-    return df.filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
 ```
 
 
