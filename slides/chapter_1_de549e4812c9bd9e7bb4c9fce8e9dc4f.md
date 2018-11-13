@@ -161,7 +161,7 @@ def create_top10_dataset(prices, exchange_rates, ratings):
 
 
 `@script`
-
+The set of transformations that the function `create_top10_dataset` executes can be split into smaller pieces. To get to `unit_prices_with_ratings` for example, 3 DataFrames are being joined and one column is being added which implements a mathematical function. These smaller transformations lend themselves to simpler testing if they were factored out. Let’s see how this can be done.
 
 
 ---
@@ -199,7 +199,68 @@ def select_top_n_best(df, limit=10):
 
 
 `@script`
-The set of transformations that the function `create_top10_dataset` executed
+Here we have recreated the same functionality as before, but have splitted the transformations on the DataFrame into smaller pieces. While it may seem silly to write a new function for only a single transformation, each transformation by itself can be tested. And reused.
+
+
+---
+## Example of testing a single transformation
+
+```yaml
+type: "FullCodeSlide"
+key: "f9dfc54cfe"
+```
+
+`@part1`
+```python
+def test_calculate_unit_price_in_euro(self):
+    record = dict(price=10, quantity=5, exchange_rate_to_euro=2.)
+    df = self.spark.createDataFrame([record])
+    result = calculate_unit_price_in_euro(df)
+
+    expected_record = dict(price=10, quantity=5, exchange_rate_to_euro=2.,
+                           unit_price_in_euro=4.)
+    expected = self.spark.createDataFrame([expected_record])
+    self.assertDataFrameEqual(result, expected)
+
+def test_calculate_unit_price_in_euro_divide_by_zero(self):
+    record = dict(price=10, quantity=0, exchange_rate_to_euro=2.)
+    df = self.spark.createDataFrame([record])
+    result = calculate_unit_price_in_euro(df)
+
+    expected_record = dict(price=10, quantity=0, exchange_rate_to_euro=2.,
+                           unit_price_in_euro=None)
+    expected = self.spark.createDataFrame([expected_record], result.schema)
+    self.assertDataFrameEqual(result, expected)```
+
+
+`@script`
+As you can see, these transformations are now easy to test. We have written two tests for the _same_ function, one where we’re testing normal usage and where we’re testing what would happen if the data behaves anomalous. In the second test, a division by zero would occur. Spark handles this by replacing the outcome with the undefined value, which maps to Python’s None singleton.
+
+
+---
+## Putting it all together
+
+```yaml
+type: "FullCodeSlide"
+key: "2cea900710"
+```
+
+`@part1`
+```python
+def create_top10_dataset(prices, exchange_rates, ratings):
+    # prices_with_ratings = prices.join(ratings, ["brand", "model"])
+    return (prices
+            .transform(partial(link_with_ratings, ratings=ratings))
+            .transform(partial(link_with_exchange_rates, rates=exchange_rates))
+            .transform(calculate_unit_price_in_euro)
+            .transform(filter_acceptable_diapers)
+            .transform(select_top_n_best)
+            )
+```
+
+
+`@script`
+
 
 
 ---
