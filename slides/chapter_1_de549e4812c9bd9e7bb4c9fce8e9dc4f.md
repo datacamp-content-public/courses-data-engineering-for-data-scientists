@@ -1,7 +1,6 @@
 ---
 title: Insert title here
 key: de549e4812c9bd9e7bb4c9fce8e9dc4f
-video_link:
 
 ---
 ## Writing Unit Tests for Pyspark
@@ -15,19 +14,20 @@ key: "ff07a4e2e5"
 
 name: Oliver Willekens
 title: Data Engineer 
-at Data Minded
 
 
 `@script`
-Welcome back. In the previous session we covered the different kinds of tests, now let's look at some problems with our original code and how we can write unit tests and create reusable components.
+Welcome back. In the previous session we've covered different kinds of tests. In this session, we will learn how to write unit tests for our Pyspark application. In doing so, we will restructure our code and create more reusable components.
 
 
 ---
-## Our earlier Spark application doesn't run locally
+## Our earlier Spark application…
 
 ```yaml
 type: "FullCodeSlide"
 key: "a0cb6d6e5e"
+disable_transition: true
+center_content: false
 ```
 
 `@part1`
@@ -35,14 +35,61 @@ key: "a0cb6d6e5e"
 exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
 retail_prices = spark.read.csv("s3://dc-course/prices")
 ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```{{1}}
 
+```python
 prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
 unit_prices_with_ratings = (prices_with_ratings
                             .join(exchange_rates, ["currency", "date"])
                             .withColumn("unit_price_in_euro",
                                         col("price") / col("quantity") 
                                         * col("exchange_rate_to_euro")))
+```{{2}}
 
+```python
+(unit_prices_with_ratings
+ .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
+ .orderBy(col("unit_price_in_euro").desc())
+ .limit(10)
+ .repartition(1)
+ .write
+ .csv("s3://dc-course/top10diapers"))
+```{{3}}
+
+
+`@script`
+The application we’ve been writing till now looks like this:
+* in the first part, data is being loaded from some location, using the spark DataFrameReader objects. In the example, the location was an S3 bucket, but it could be a database or a file on a local filesystem.
+* in the second part, we created a wide table, by joining the datasets and appending a column, which is based on the already existing ones.
+* in the last part, the data is filtered down to only those records we’re interested in and sorted. We only take the top 10 records and write this result away.
+
+
+---
+## Our earlier Spark application... doesn't run locally
+
+```yaml
+type: "FullCodeSlide"
+key: "c083e56692"
+disable_transition: true
+```
+
+`@part1`
+```python
+exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
+retail_prices = spark.read.csv("s3://dc-course/prices")
+ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```
+
+```python
+prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
+unit_prices_with_ratings = (prices_with_ratings
+                            .join(exchange_rates, ["currency", "date"])
+                            .withColumn("unit_price_in_euro",
+                                        col("price") / col("quantity") 
+                                        * col("exchange_rate_to_euro")))
+```
+
+```python
 (unit_prices_with_ratings
  .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
  .orderBy(col("unit_price_in_euro").desc())
@@ -55,22 +102,6 @@ unit_prices_with_ratings = (prices_with_ratings
 
 `@script`
 Our application has hard-coded dependencies to S3 paths we might not have access to and surely, we don't want to impact our production data from our local machine. So as a first step, let's remove these hard coded paths.
-
-
----
-## Our earlier Spark application doesn't run locally
-
-```yaml
-type: "FullCodeSlide"
-key: "c083e56692"
-```
-
-`@part1`
-
-
-
-`@script`
-
 
 
 ---
