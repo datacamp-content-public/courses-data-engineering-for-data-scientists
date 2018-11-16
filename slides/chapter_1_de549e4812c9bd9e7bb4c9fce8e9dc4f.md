@@ -2,7 +2,6 @@
 title: Insert title here
 key: de549e4812c9bd9e7bb4c9fce8e9dc4f
 video_link:
-  mp3: http://assets.datacamp.com/production/repositories/4049/datasets/99ff48889e1dae44d547bcf197aaaa0f00d1c5f2/overlay.mp3
 
 ---
 ## Writing Unit Tests for Pyspark
@@ -15,11 +14,12 @@ key: "ff07a4e2e5"
 `@lower_third`
 
 name: Oliver Willekens
-title: Data Engineer at Data Minded
+title: Data Engineer 
+at Data Minded
 
 
 `@script`
-In the previous section we covered the different kinds of tests, now let's look at some problems with our original code and how we can write unit tests and create reusable components.
+Welcome back. In the previous session we covered the different kinds of tests, now let's look at some problems with our original code and how we can write unit tests and create reusable components.
 
 
 ---
@@ -55,6 +55,22 @@ unit_prices_with_ratings = (prices_with_ratings
 
 `@script`
 Our application has hard-coded dependencies to S3 paths we might not have access to and surely, we don't want to impact our production data from our local machine. So as a first step, let's remove these hard coded paths.
+
+
+---
+## Our earlier Spark application doesn't run locally
+
+```yaml
+type: "FullCodeSlide"
+key: "c083e56692"
+```
+
+`@part1`
+
+
+
+`@script`
+
 
 
 ---
