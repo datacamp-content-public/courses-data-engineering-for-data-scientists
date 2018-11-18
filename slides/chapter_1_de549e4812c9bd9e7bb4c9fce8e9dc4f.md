@@ -123,6 +123,7 @@ unit_prices_with_ratings = (prices_with_ratings
 ```yaml
 type: "FullCodeSlide"
 key: "37d84ade10"
+disable_transition: true
 ```
 
 `@part1`
@@ -158,6 +159,7 @@ unit_prices_with_ratings = (prices_with_ratings
 ```yaml
 type: "FullCodeSlide"
 key: "27451ecb98"
+disable_transition: true
 ```
 
 `@part1`
@@ -194,6 +196,7 @@ unit_prices_with_ratings = (prices_with_ratings
 ```yaml
 type: "FullCodeSlide"
 key: "7d70f54fc4"
+disable_transition: true
 ```
 
 `@part1`
@@ -268,12 +271,49 @@ Our application has hard-coded dependencies to S3 paths we might not have access
 
 
 ---
+## Creating in-memory DataFrames
+
+```yaml
+type: "FullCodeSlide"
+key: "9fe02bd136"
+```
+
+`@part1`
+Downsides to working with files:
+* hard to maintain {{1}}
+* breaks code-locality {{2}}
+* improperly sampled {{3}}
+
+Consider making in-memory Spark DataFrames:{{4}}
+```python
+prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
+                   date(2018, 11, 12))]
+col_names_prices = ("store", "countrycode", "brand", "model",
+                    "price", "currency", "quantity", "date")
+prices_df = spark.createDataFrame(prices, col_names_prices)
+exchanges_df = ...
+ratings_df = ...
+create_top10_dataset(prices_df, exchange_rates_df, ratings_df)
+```{{4}}
+
+
+`@script`
+There are several downsides about working with files.
+For starters, they are hard to maintain: binary files can't be properly viewed and even non-binary files like CSVs pose navigation challenges when there's too much data. You also need to store them properly and get access to them in a filesystem agnostic way, which is not trivial.
+
+Next, using files also breaks code-locality. It's the concept where parts of the code that are being used together should be closely grouped together as well. By having sample data in separate files, you increase the distance between understanding what goes into a function and what that function does to the data.
+
+Finally, data in files is often improperly sampled. You will want to test the behaviour of your code when given both regular _and_ edge cases. The latter is often underrepresented in your sample files. It would also become cumbersome to extract just those edge cases and verify the transformations.
+
+Here’s an example of how you could create in-memory DataFrames. You create a list of tuples representing the data, one tuple for each row or object. You pass that to `createDataFrame` together with the corresponding column names and you end up with a DataFrame that you can then pass around to other functions. Using this technique we can  factor out the reading from and writing to files or databases.
+
+
+---
 ## Remove hard-coded paths & extract RW logic
 
 ```yaml
 type: "FullCodeSlide"
-key: "66e09eb241"
-center_content: false
+key: "98b5c31614"
 ```
 
 `@part1`
@@ -303,46 +343,9 @@ def write_data(df):
 
 
 `@script`
-We’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the main logic. That function accepts 3 Spark dataframes. Optionally, the read and write functions can get the paths from a data catalogue, which could be passed in as a dictionary, e.g.
+When we now revise our original Spark application, we would rewrite it like this. We’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the main logic.  Optionally, the read and write functions can get the paths from a data catalogue, which could be passed in as a dictionary, e.g.
 
-
----
-## Creating in-memory DataFrames
-
-```yaml
-type: "FullCodeSlide"
-key: "9fe02bd136"
-```
-
-`@part1`
-Downsides to working with files:
-* hard to maintain {{1}}
-* breaks code-locality {{2}}
-* improperly sampled {{3}}
-
-Consider making in-memory Spark DataFrames:{{4}}
-```python
-prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
-                   date(2018, 11, 12))]
-col_names_prices = ("store", "countrycode", "brand", "model",
-                    "price", "currency", "quantity", "date")
-prices_df = spark.createDataFrame(prices, col_names_prices)
-exchanges_df = ...
-ratings_df = ...
-create_top10_dataset(prices_df, exchange_rates_df, ratings_df)
-```{{4}}
-
-
-`@script`
-There are several downsides about working with files.
-For starters, they are hard to maintain: binary files can't be properly viewed and even non-binary files likes CSVs pose navigation challenges when there's too much data.
-
-Next, using files also breaks code-locality. It's the concept where parts of the code that are being used together should be closely grouped together as well. By having sample data in separate files, you increase the distance between understanding what goes into a function and what that function does to the data.
-
-Finally, data in files is often improperly sampled. You will want to test the behaviour of your code when given both regular and edge cases. The latter is often underrepresented in your sample files. It would also become cumbersome to extract just those edge cases and verify the transformations.
-
-Here’s an example of how you could create in-memory DataFrames. The data itself can be easily changed, by altering the list of tuples.
-We still have a lot of work being done by `create_top10_dataset` though, which makes it hard to test.
+We still have a lot of work being done by `create_top10_dataset` though, which makes that particular function hard to test. Let’s inspect the function more closely and see how we can break it up into pieces that are easier to test functionally.
 
 
 ---

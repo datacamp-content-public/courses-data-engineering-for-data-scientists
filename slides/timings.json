@@ -3,7 +3,8 @@
     {
       "timing": 0,
       "state": {
-        "indexh": 1
+        "indexh": 1,
+        "indexf": -1
       }
     },
     {
