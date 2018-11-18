@@ -315,7 +315,6 @@ key: "9fe02bd136"
 ```
 
 `@part1`
-Consider making in-memory Spark DataFrames:{{4}}
 ```python
 prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
                    date(2018, 11, 12))]
