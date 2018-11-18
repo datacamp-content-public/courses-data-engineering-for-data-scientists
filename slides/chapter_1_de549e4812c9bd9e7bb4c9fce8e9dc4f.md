@@ -41,10 +41,71 @@ ratings = spark.read.csv("s3://dc-course/diaper_ratings")
 prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
 unit_prices_with_ratings = (prices_with_ratings
                             .join(exchange_rates, ["currency", "date"])
+
+```{{2}}
+
+
+`@script`
+The application we’ve been writing till now looks like this:
+* in the first part, data is being loaded from some location, using the spark DataFrameReader objects. In the example, the location was an S3 bucket, but it could be a database or a file on a local filesystem.
+* in the second part, we created a wide table, by joining the datasets and appending a column, which is based on the already existing ones.
+* in the last part, the data is filtered down to only those records we’re interested in and sorted. We only take the top 10 records and write this result away.
+
+
+---
+## Our earlier Spark application…
+
+```yaml
+type: "FullCodeSlide"
+key: "6610fd83c1"
+disable_transition: true
+```
+
+`@part1`
+```python
+exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
+retail_prices = spark.read.csv("s3://dc-course/prices")
+ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```
+
+```python
+prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
+unit_prices_with_ratings = (prices_with_ratings
+                            .join(exchange_rates, ["currency", "date"])
                             .withColumn("unit_price_in_euro",
                                         col("price") / col("quantity") 
                                         * col("exchange_rate_to_euro")))
-```{{2}}
+```
+
+
+`@script`
+
+
+
+---
+## Our earlier Spark application…
+
+```yaml
+type: "FullCodeSlide"
+key: "c3f91cf8e8"
+disable_transition: true
+```
+
+`@part1`
+```python
+exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
+retail_prices = spark.read.csv("s3://dc-course/prices")
+ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```
+
+```python
+prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
+unit_prices_with_ratings = (prices_with_ratings
+                            .join(exchange_rates, ["currency", "date"])
+                            .withColumn("unit_price_in_euro",
+                                        col("price") / col("quantity") 
+                                        * col("exchange_rate_to_euro")))
+```
 
 ```python
 (unit_prices_with_ratings
@@ -54,14 +115,11 @@ unit_prices_with_ratings = (prices_with_ratings
  .repartition(1)
  .write
  .csv("s3://dc-course/top10diapers"))
-```{{3}}
+```
 
 
 `@script`
-The application we’ve been writing till now looks like this:
-* in the first part, data is being loaded from some location, using the spark DataFrameReader objects. In the example, the location was an S3 bucket, but it could be a database or a file on a local filesystem.
-* in the second part, we created a wide table, by joining the datasets and appending a column, which is based on the already existing ones.
-* in the last part, the data is filtered down to only those records we’re interested in and sorted. We only take the top 10 records and write this result away.
+
 
 
 ---
