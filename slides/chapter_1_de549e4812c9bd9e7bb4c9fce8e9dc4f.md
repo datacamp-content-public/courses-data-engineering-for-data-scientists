@@ -279,7 +279,7 @@ key: "309beb2013"
 `@part1`
 ```python
 
-def load_data():
+def load_data(catalog=None):
    ...
 
 def create_top10_dataset(prices, exchange_rates, ratings):
@@ -297,15 +297,13 @@ def create_top10_dataset(prices, exchange_rates, ratings):
             .orderBy(col("unit_price_in_euro").desc())
             .limit(10))
 
-def write_data(df):
+def write_data(df, catalog=None):
    ...
 ```
 
 
 `@script`
-When we now revise our original Spark application, we would rewrite it like this. We’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the main logic.  Optionally, the read and write functions can get the paths from a data catalogue, which could be passed in as a dictionary, e.g.
-
-We still have a lot of work being done by `create_top10_dataset` though, which makes that particular function hard to test. Let’s inspect the function more closely and see how we can break it up into pieces that are easier to test functionally.
+In this first revision, we’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the transformations.  Optionally, the read and write functions can get the paths from a data catalogue, which could be passed in as a dictionary, e.g., which would also facilitate loading data from different sources depending on the environment, whether that is production or a local development environment.
 
 
 ---
@@ -317,11 +315,6 @@ key: "9fe02bd136"
 ```
 
 `@part1`
-Downsides to working with files:
-* hard to maintain {{1}}
-* breaks code-locality {{2}}
-* improperly sampled {{3}}
-
 Consider making in-memory Spark DataFrames:{{4}}
 ```python
 prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
@@ -331,14 +324,15 @@ col_names_prices = ("store", "countrycode", "brand", "model",
 prices_df = spark.createDataFrame(prices, col_names_prices)
 exchanges_df = ...
 ratings_df = ...
+
 create_top10_dataset(prices_df, exchange_rates_df, ratings_df)
-```{{4}}
+```{{1}}
 
 
 `@script`
-W
+Now that we've put the transformation logic into a separate function that takes spark Dataframes as input, we need to learn how we can create in-memory dataframes.
 
-Here’s an example of how you could create in-memory DataFrames. You create a list of tuples representing the data, one tuple for each row or object. You pass that to `createDataFrame` together with the corresponding column names and you end up with a DataFrame that you can then pass around to other functions. Using this technique we can  factor out the reading from and writing to files or databases.
+Here’s an example of how you could do that. You create a list of tuples representing the data, one tuple for each row or object. You pass that to `createDataFrame` together with the corresponding column names and you end up with a DataFrame that you can then pass around to other functions, like `create_top10_dataset`.
 
 
 ---
@@ -369,6 +363,8 @@ def create_top10_dataset(prices, exchange_rates, ratings):
 
 
 `@script`
+We still have a lot of work being done by `create_top10_dataset` though, which makes that particular function hard to test. Let’s inspect that function more closely and see how we can break it up into pieces that are easier to test functionally.
+
 The set of transformations that the function `create_top10_dataset` executes can be split into smaller pieces. To get to `unit_prices_with_ratings` for example, 3 DataFrames are being joined and one column is being added which implements a mathematical function. These smaller transformations lend themselves to simpler testing if they were factored out. Let’s see how this can be done.
 
 
@@ -480,7 +476,7 @@ def test_calculate_unit_price_in_euro(self):
 
 
 `@script`
-To compare two dataframes, a helper function called `assertDataFrameEqual` is created which checks several things for you. You may ignore the inner workings of this method for now, just keep in mind that it is a useful abstraction, with which we can assert that the dataframes are equivalent.
+To compare the two dataframes, a helper function called `assertDataFrameEqual` is created which checks several things for you. You may ignore the inner workings of this method for now, just keep in mind that it is a useful abstraction, with which we can assert that the dataframes are equivalent.
 
 A test like this works well in a unit testing framework, like pytest.
 
