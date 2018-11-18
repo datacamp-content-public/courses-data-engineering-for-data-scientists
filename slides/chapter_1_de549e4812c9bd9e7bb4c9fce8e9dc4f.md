@@ -41,15 +41,13 @@ ratings = spark.read.csv("s3://dc-course/diaper_ratings")
 prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
 unit_prices_with_ratings = (prices_with_ratings
                             .join(exchange_rates, ["currency", "date"])
-
 ```{{2}}
 
 
 `@script`
 The application we’ve been writing till now looks like this:
 * in the first part, data is being loaded from some location, using the spark DataFrameReader objects. In the example, the location was an S3 bucket, but it could be a database or a file on a local filesystem.
-* in the second part, we created a wide table, by joining the datasets and appending a column, which is based on the already existing ones.
-* in the last part, the data is filtered down to only those records we’re interested in and sorted. We only take the top 10 records and write this result away.
+* in the second part, we created a wide table, by joining the datasets.…
 
 
 ---
@@ -79,7 +77,7 @@ unit_prices_with_ratings = (prices_with_ratings
 
 
 `@script`
-
+... and appending a column, which is based on the already existing ones.
 
 
 ---
@@ -114,7 +112,7 @@ unit_prices_with_ratings = (prices_with_ratings
 
 
 `@script`
-
+* in the last part, the data is filtered down to only those records we’re interested in …
 
 
 ---
@@ -150,7 +148,7 @@ unit_prices_with_ratings = (prices_with_ratings
 
 
 `@script`
-
+...and sorted.
 
 
 ---
@@ -187,7 +185,7 @@ unit_prices_with_ratings = (prices_with_ratings
 
 
 `@script`
-
+...We only take the top 10 records …
 
 
 ---
@@ -227,7 +225,7 @@ unit_prices_with_ratings = (prices_with_ratings
 
 
 `@script`
-
+…and write this result away.
 
 
 ---
@@ -267,53 +265,15 @@ unit_prices_with_ratings = (prices_with_ratings
 
 
 `@script`
-Our application has hard-coded dependencies to S3 paths we might not have access to and surely, we don't want to impact our production data from our local machine. So as a first step, let's remove these hard coded paths.
+Our application depends on having access to files on Amazon's Simple Storage Service. That also makes it hard to test the functionality of the transformation part of our ETL pipeline. So as a first step, let's factor out these hard coded paths.
 
 
 ---
-## Creating in-memory DataFrames
+## Separate extraction, transformation and loading
 
 ```yaml
 type: "FullCodeSlide"
-key: "9fe02bd136"
-```
-
-`@part1`
-Downsides to working with files:
-* hard to maintain {{1}}
-* breaks code-locality {{2}}
-* improperly sampled {{3}}
-
-Consider making in-memory Spark DataFrames:{{4}}
-```python
-prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
-                   date(2018, 11, 12))]
-col_names_prices = ("store", "countrycode", "brand", "model",
-                    "price", "currency", "quantity", "date")
-prices_df = spark.createDataFrame(prices, col_names_prices)
-exchanges_df = ...
-ratings_df = ...
-create_top10_dataset(prices_df, exchange_rates_df, ratings_df)
-```{{4}}
-
-
-`@script`
-There are several downsides about working with files.
-For starters, they are hard to maintain: binary files can't be properly viewed and even non-binary files like CSVs pose navigation challenges when there's too much data. You also need to store them properly and get access to them in a filesystem agnostic way, which is not trivial.
-
-Next, using files also breaks code-locality. It's the concept where parts of the code that are being used together should be closely grouped together as well. By having sample data in separate files, you increase the distance between understanding what goes into a function and what that function does to the data.
-
-Finally, data in files is often improperly sampled. You will want to test the behaviour of your code when given both regular _and_ edge cases. The latter is often underrepresented in your sample files. It would also become cumbersome to extract just those edge cases and verify the transformations.
-
-Here’s an example of how you could create in-memory DataFrames. You create a list of tuples representing the data, one tuple for each row or object. You pass that to `createDataFrame` together with the corresponding column names and you end up with a DataFrame that you can then pass around to other functions. Using this technique we can  factor out the reading from and writing to files or databases.
-
-
----
-## Remove hard-coded paths & extract RW logic
-
-```yaml
-type: "FullCodeSlide"
-key: "98b5c31614"
+key: "309beb2013"
 ```
 
 `@part1`
@@ -346,6 +306,39 @@ def write_data(df):
 When we now revise our original Spark application, we would rewrite it like this. We’ve extracted the parts where the dataframes are being read and written to their own functions and created another function, `create_top10_dataset`, that executes the main logic.  Optionally, the read and write functions can get the paths from a data catalogue, which could be passed in as a dictionary, e.g.
 
 We still have a lot of work being done by `create_top10_dataset` though, which makes that particular function hard to test. Let’s inspect the function more closely and see how we can break it up into pieces that are easier to test functionally.
+
+
+---
+## Creating in-memory DataFrames
+
+```yaml
+type: "FullCodeSlide"
+key: "9fe02bd136"
+```
+
+`@part1`
+Downsides to working with files:
+* hard to maintain {{1}}
+* breaks code-locality {{2}}
+* improperly sampled {{3}}
+
+Consider making in-memory Spark DataFrames:{{4}}
+```python
+prices = [("Babys-R-Us", "UK", "Pampers", "Extra Dry", 10, "GBP", 12,
+                   date(2018, 11, 12))]
+col_names_prices = ("store", "countrycode", "brand", "model",
+                    "price", "currency", "quantity", "date")
+prices_df = spark.createDataFrame(prices, col_names_prices)
+exchanges_df = ...
+ratings_df = ...
+create_top10_dataset(prices_df, exchange_rates_df, ratings_df)
+```{{4}}
+
+
+`@script`
+W
+
+Here’s an example of how you could create in-memory DataFrames. You create a list of tuples representing the data, one tuple for each row or object. You pass that to `createDataFrame` together with the corresponding column names and you end up with a DataFrame that you can then pass around to other functions. Using this technique we can  factor out the reading from and writing to files or databases.
 
 
 ---
@@ -385,7 +378,7 @@ The set of transformations that the function `create_top10_dataset` executes can
 ```yaml
 type: "FullCodeSlide"
 key: "df26bee985"
-disable_transition: true
+disable_transition: false
 ```
 
 `@part1`
