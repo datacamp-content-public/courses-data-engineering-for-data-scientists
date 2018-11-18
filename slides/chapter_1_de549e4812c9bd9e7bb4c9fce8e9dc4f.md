@@ -110,6 +110,111 @@ unit_prices_with_ratings = (prices_with_ratings
 ```python
 (unit_prices_with_ratings
  .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
+```
+
+
+`@script`
+
+
+
+---
+## Our earlier Spark application…
+
+```yaml
+type: "FullCodeSlide"
+key: "37d84ade10"
+```
+
+`@part1`
+```python
+exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
+retail_prices = spark.read.csv("s3://dc-course/prices")
+ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```
+
+```python
+prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
+unit_prices_with_ratings = (prices_with_ratings
+                            .join(exchange_rates, ["currency", "date"])
+                            .withColumn("unit_price_in_euro",
+                                        col("price") / col("quantity") 
+                                        * col("exchange_rate_to_euro")))
+```
+
+```python
+(unit_prices_with_ratings
+ .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
+ .orderBy(col("unit_price_in_euro").desc())
+```
+
+
+`@script`
+
+
+
+---
+## Our earlier Spark application…
+
+```yaml
+type: "FullCodeSlide"
+key: "27451ecb98"
+```
+
+`@part1`
+```python
+exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
+retail_prices = spark.read.csv("s3://dc-course/prices")
+ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```
+
+```python
+prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
+unit_prices_with_ratings = (prices_with_ratings
+                            .join(exchange_rates, ["currency", "date"])
+                            .withColumn("unit_price_in_euro",
+                                        col("price") / col("quantity") 
+                                        * col("exchange_rate_to_euro")))
+```
+
+```python
+(unit_prices_with_ratings
+ .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
+ .orderBy(col("unit_price_in_euro").desc())
+ .limit(10)
+```
+
+
+`@script`
+
+
+
+---
+## Our earlier Spark application…
+
+```yaml
+type: "FullCodeSlide"
+key: "7d70f54fc4"
+```
+
+`@part1`
+```python
+exchange_rates = spark.read.csv("s3://dc-course/exchange_rates")
+retail_prices = spark.read.csv("s3://dc-course/prices")
+ratings = spark.read.csv("s3://dc-course/diaper_ratings")
+```
+
+```python
+prices_with_ratings = retail_prices.join(ratings, ["brand", "model"])
+unit_prices_with_ratings = (prices_with_ratings
+                            .join(exchange_rates, ["currency", "date"])
+                            .withColumn("unit_price_in_euro",
+                                        col("price") / col("quantity") 
+                                        * col("exchange_rate_to_euro")))
+```
+
+```python
+(unit_prices_with_ratings
+ .filter((col("absorption_rate") >= 4) & (col("comfort") >= 3))
  .orderBy(col("unit_price_in_euro").desc())
  .limit(10)
  .repartition(1)
