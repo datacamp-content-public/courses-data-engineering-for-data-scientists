@@ -423,33 +423,113 @@ Here we have recreated the same functionality as before, but have splitted the t
 ```yaml
 type: "FullCodeSlide"
 key: "f9dfc54cfe"
+disable_transition: false
+```
+
+`@part1`
+```python
+def test_calculate_unit_price_in_euro(self):
+	record = dict(price=10, quantity=5, exchange_rate_to_euro=2.)
+	df = self.spark.createDataFrame([record])
+```{{1}}
+
+
+`@script`
+Let us now test one of these smaller building blocks, like the calculation of the unit price in euros. To do so, we only need a dataframe with 3 variables: the price in some currency, the quantity and an exchange rate for proper comparisons.
+
+We start by creating an in-memory dataframe. This time, we use another approach: rather than splitting up the data in a list of tuples and a set of column names, we can also create a dataframe directly from a list of dictionaries, similar to how it can be done in the Pandas module too.
+
+
+---
+## Example of testing a single transformation
+
+```yaml
+type: "FullCodeSlide"
+key: "7d6a222941"
+disable_transition: true
 ```
 
 `@part1`
 ```python
 def test_calculate_unit_price_in_euro(self):
     record = dict(price=10, quantity=5, exchange_rate_to_euro=2.)
-    df = self.spark.createDataFrame([record])
+    df = self.spark.createDataFrame([record])    
     result = calculate_unit_price_in_euro(df)
 
-    expected_record = dict(price=10, quantity=5, exchange_rate_to_euro=2.,
-                           unit_price_in_euro=4.)
+    expected_record = dict(unit_price_in_euro=4., **record)
+    expected = self.spark.createDataFrame([expected_record])
+```
+
+
+`@script`
+A typical test regards the function we're testing as a black box: given some known input, there's an expected output. It's that return value that we want to scrutinize.
+
+
+---
+## Example of testing a single transformation
+
+```yaml
+type: "FullCodeSlide"
+key: "62b6447554"
+```
+
+`@part1`
+```python
+def test_calculate_unit_price_in_euro(self):
+    record = dict(price=10, quantity=5, exchange_rate_to_euro=2.)
+    df = self.spark.createDataFrame([record])    
+    result = calculate_unit_price_in_euro(df)
+
+    expected_record = dict(unit_price_in_euro=4., **record)
     expected = self.spark.createDataFrame([expected_record])
     self.assertDataFrameEqual(result, expected)
+```
 
+
+`@script`
+To compare two dataframes, a helper function called `assertDataFrameEqual` is created which checks several things for you. You may ignore the inner workings of this method for now, just keep in mind that it is a useful abstraction, with which we can assert that the dataframes are equivalent.
+
+A test like this works well in a unit testing framework, like pytest.
+
+
+---
+## Example of testing a single transformation
+
+```yaml
+type: "FullCodeSlide"
+key: "555bc353ab"
+```
+
+`@part1`
+```python
+def test_calculate_unit_price_in_euro(self):
+    record = dict(price=10, quantity=5, exchange_rate_to_euro=2.)
+    df = self.spark.createDataFrame([record])    
+    result = calculate_unit_price_in_euro(df)
+
+    expected_record = dict(unit_price_in_euro=4., **record)
+    expected = self.spark.createDataFrame([expected_record])
+    self.assertDataFrameEqual(result, expected)
+``` 
+
+```python
 def test_calculate_unit_price_in_euro_divide_by_zero(self):
     record = dict(price=10, quantity=0, exchange_rate_to_euro=2.)
     df = self.spark.createDataFrame([record])
     result = calculate_unit_price_in_euro(df)
 
-    expected_record = dict(price=10, quantity=0, exchange_rate_to_euro=2.,
-                           unit_price_in_euro=None)
+    expected_record = dict(unit_price_in_euro=None, **record)
     expected = self.spark.createDataFrame([expected_record], result.schema)
-    self.assertDataFrameEqual(result, expected)```
+    self.assertDataFrameEqual(result, expected)
+```{{2}}
 
 
 `@script`
-As you can see, these transformations are now easy to test. We have written two tests for the _same_ function, one where we’re testing normal usage and where we’re testing what would happen if the data behaves anomalous. In the second test, a division by zero would occur. Spark handles this by replacing the outcome with the undefined value, which maps to Python’s None singleton.
+Now, this first unit test only checks the normal behavior. We would do well checking also anomalous behavior and asserting our function still works as intended. 
+
+In this second test, which is almost identical to the first, we pass in data where the _quantity_ is unknown, so that a division by zero would occur. Spark handles this by replacing the outcome with the undefined value, which maps to Python’s None singleton. So we should find that in the return value of function under test.
+
+These two examples show how a simple function, like adding a column based on some combination of other columns, typically have a whole set of tests associated.
 
 
 ---
@@ -486,9 +566,9 @@ def create_weekly_brand_scores(prices, exchange_rates, ratings):
 
 
 `@script`
-Those modular functions we made before can now easily be chained, using the `transform` method of Spark DataFrames.
+The modular functions we made before can now easily be chained, using the `transform` method of Spark DataFrames. Python's `partial` function from the module `functools` also comes into good use here, as it allows us to create partial functions, where the last remaining atribute, which is the dataframe we start with, gets filled in by the transform method.
 
-We can now also re-use them in entirely different data pipelines. Here's another example where we reuse a lot of what we have written before with only two new functions which we'll explore in the exercices.
+We can now also re-use the small functions we've made in entirely different data pipelines. Here's another example where we reuse a lot of what we have written before with only two new functions which we'll explore in the exercices.
 
 
 ---
