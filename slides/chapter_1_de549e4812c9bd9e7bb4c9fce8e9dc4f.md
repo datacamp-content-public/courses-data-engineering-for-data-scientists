@@ -12,12 +12,33 @@ key: "ff07a4e2e5"
 
 `@lower_third`
 
-name: Oliver Willekens
+name: Oliver Willekens, PhD
 title: Data Engineer 
 
 
 `@script`
 Welcome back. In the previous session we've covered different kinds of tests. In this session, we will learn how to write unit tests for our Pyspark application. In doing so, we will restructure our code and create more reusable components.
+
+
+---
+## Insert title heretest
+
+```yaml
+type: "FullSlide"
+key: "0e3b7caf87"
+```
+
+`@part1`
+vvsd
+`test` 
+
+```
+rzqqr
+```
+
+
+`@script`
+
 
 
 ---
