@@ -21,27 +21,6 @@ Welcome back. In the previous session we've covered different kinds of tests. In
 
 
 ---
-## Insert title heretest
-
-```yaml
-type: "FullSlide"
-key: "0e3b7caf87"
-```
-
-`@part1`
-vvsd
-`test` 
-
-```
-rzqqr
-```
-
-
-`@script`
-
-
-
----
 ## Our earlier Spark application…
 
 ```yaml

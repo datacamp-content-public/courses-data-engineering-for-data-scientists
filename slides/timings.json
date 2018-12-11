@@ -3,13 +3,6 @@
     {
       "timing": 0,
       "state": {
-        "indexh": 1,
-        "indexf": -1
-      }
-    },
-    {
-      "timing": 0,
-      "state": {
         "indexh": 0,
         "indexf": 0
       }
@@ -21,5 +14,6 @@
         "indexf": -1
       }
     }
-  ]
+  ],
+  "slides/chapter_3_409a19bd1e4c9516db4b76c184632c8b.md": []
 }
